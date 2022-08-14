@@ -73,17 +73,19 @@ namespace WaifuManager {
         });
     }
 
-    export async function leaveVc(guild: Guild) {
+    export async function leaveVc(guild: Guild, withoutByeMessage?: boolean) {
         // get guild info
         const foundInfo = waifuGuilds?.get(guild.id);
 
-        // play leave message
-        if (foundInfo?.audioPlayer) await WaifuManager.playMessage(foundInfo?.audioPlayer, getRandomLeaveMessage());
-        await wait(2000); // wait for leave message to play
+        // make sure in voice channel
+        if (guild.members.me?.voice.channel) {
+            // play leave message
+            if (foundInfo && foundInfo.audioPlayer && !withoutByeMessage)
+                await WaifuManager.playMessage(foundInfo?.audioPlayer, getRandomLeaveMessage());
 
-        if (foundInfo) {
             // if guild info destroy vc
-            foundInfo.voiceConnection.destroy();
+            if (foundInfo?.voiceConnection) foundInfo.voiceConnection.destroy();
+            guild.members.me?.voice.setChannel(null);
         } else {
             // if not guild info throw error
             throw new UserError("I'm likely not in a vc :3");
@@ -98,7 +100,7 @@ namespace WaifuManager {
 
         if (foundGuild && foundGuild.voiceConnection) {
             // get clever bot response
-            const cleverbotResponse = await cleverbot(input, foundGuild.previousMessages, "zh");
+            const cleverbotResponse = await cleverbot(input, foundGuild.previousMessages, "en");
 
             // add reply to context
             foundGuild.previousMessages.push(
@@ -156,6 +158,11 @@ namespace WaifuManager {
 
         // play message
         audioPlayer.play(audioResource);
+
+        // wait for leave message to play
+        await wait(audioResource.playbackDuration + 2000);
+
+        return;
     }
 }
 

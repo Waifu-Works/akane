@@ -4,9 +4,6 @@ import WaifuManager from "../manager/waifuManager";
 export async function leaveCommand(interaction: CommandInteraction) {
     if (!interaction.guild) return;
 
-    // defer reply
-    await interaction.deferReply();
-
     // make bot leave vc
     await WaifuManager.leaveVc(interaction.guild);
 

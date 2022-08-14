@@ -6,9 +6,6 @@ var builders_1 = require("@discordjs/builders");
 var v9_1 = require("discord-api-types/v9");
 var commands = [
     new builders_1.SlashCommandBuilder()
-        .setName("help")
-        .setDescription("Need help? Then this is the perfect command for you!"),
-    new builders_1.SlashCommandBuilder()
         .setName("join")
         .setDescription("Joins your voice channel and yes")
         .addChannelOption(function (option) {

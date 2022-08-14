@@ -6,9 +6,6 @@ import { Routes } from "discord-api-types/v9";
 
 const commands = [
     new SlashCommandBuilder()
-        .setName("help")
-        .setDescription("Need help? Then this is the perfect command for you!"),
-    new SlashCommandBuilder()
         .setName("join")
         .setDescription("Joins your voice channel and yes")
         .addChannelOption((option) =>

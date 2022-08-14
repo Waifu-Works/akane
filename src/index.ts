@@ -25,8 +25,14 @@ addSpeechEvent(client, {
 
 client.on("ready", async () => {
     console.log(`Ready as ${client.user?.tag}`);
+    // client.application?.commands.fetch('1005661081789804604') // id of your command
+    //     .then((command) => {
+    //         console.log(`Fetched command ${command.name}`)
+    //         // further delete it like so:
+    //         command.delete()
+    //         console.log(`Deleted command ${command.name}`)
+    //     }).catch(console.error);
 });
-
 
 client.on("speech", async (message: VoiceMessage) => {
     try {
@@ -47,7 +53,8 @@ client.on("speech", async (message: VoiceMessage) => {
 
         // log bot 
         console.log(
-            `me: ${message.content} \n` +
+            `=== [${message.guild.name}] === \n` +
+            `${message.author.tag}: ${message.content} \n` +
             `bot: ${guildResponse}`
         );
 
@@ -88,8 +95,24 @@ client.on("interactionCreate", async (interaction) => {
     }
 });
 
-process.on("exit", client.destroy);
+client.on("voiceStateUpdate", async (oldState, newState) => {
+    // get users in vc who arent bots
+    const usersInVoiceChat = newState.channel?.members.filter(m => !m.user.bot)
+
+    if (!usersInVoiceChat) {
+        // @ts-ignore
+        if (oldState && oldState.guild) return await WaifuManager.leaveVc(newState.guild, true);
+    }
+});
+
+process.on("uncaughtException", (e) => { console.log(e) });
+process.on("SIGINT", function () {
+    console.log("Caught interrupt signal");
+    client.destroy();
+
+    process.exit();
+});
 
 client.login(process.env["DISCORD_TOKEN"]); // login to discord 
 
-export { client }; 
+export { client };   
