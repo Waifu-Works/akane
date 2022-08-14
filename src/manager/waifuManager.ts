@@ -84,8 +84,13 @@ namespace WaifuManager {
                 await WaifuManager.playMessage(foundInfo?.audioPlayer, getRandomLeaveMessage());
 
             // if guild info destroy vc
-            if (foundInfo?.voiceConnection) foundInfo.voiceConnection.destroy();
-            guild.members.me?.voice.setChannel(null);
+            if (foundInfo?.voiceConnection)
+                foundInfo.voiceConnection.destroy();
+            else {
+                const voiceConnection = getVoiceConnection(guild.id)
+
+                if (voiceConnection) voiceConnection.destroy();
+            }
         } else {
             // if not guild info throw error
             throw new UserError("I'm likely not in a vc :3");

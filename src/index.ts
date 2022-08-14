@@ -1,10 +1,10 @@
 import "dotenv/config";
-import Discord, { Channel, VoiceChannel, GatewayIntentBits } from "discord.js";
+import Discord, { Channel, VoiceChannel, GatewayIntentBits, ActivityType } from "discord.js";
 import { addSpeechEvent, VoiceMessage } from "discord-speech-recognition";
 import errorEmbed from "./utils/errorEmbed";
 import WaifuManager from "./manager/waifuManager";
 import getAudioBuffer from "./utils/getAudioBuffer";
-import { createAudioResource } from '@discordjs/voice'
+import { createAudioResource, getVoiceConnection } from '@discordjs/voice'
 import uwuify from "./utils/uwuify";
 import joinCommand from "./commands/joinCommand";
 import { leaveCommand } from "./commands/leaveCommand";
@@ -25,14 +25,31 @@ addSpeechEvent(client, {
 
 client.on("ready", async () => {
     console.log(`Ready as ${client.user?.tag}`);
-    // client.application?.commands.fetch('1005661081789804604') // id of your command
-    //     .then((command) => {
-    //         console.log(`Fetched command ${command.name}`)
-    //         // further delete it like so:
-    //         command.delete()
-    //         console.log(`Deleted command ${command.name}`)
-    //     }).catch(console.error);
-});
+
+    // TODO: fix this clusterfuck
+    const updateStatus = () => {
+        let numberChannelMembers = 0;
+
+        let membersInChannels = client.channels.cache
+            // @ts-ignore
+            .filter((channel: VoiceChannel) =>
+                channel.isVoiceBased() &&
+                channel.members.find(member => member.user.id === client.user?.id)
+            )
+            // @ts-ignore
+            .map((channel: VoiceChannel) => channel.members.filter(member => !member.user.bot).size)
+
+        if (membersInChannels.length > 0) numberChannelMembers = membersInChannels.reduce((p, n) => p + n);
+
+        client.user?.setActivity({
+            type: ActivityType.Listening,
+            name: `${numberChannelMembers} simps in ${client.guilds.cache.size} servers!`
+        });
+    }
+
+    setInterval(updateStatus, 15 * 1000);
+    updateStatus();
+})
 
 client.on("speech", async (message: VoiceMessage) => {
     try {
@@ -95,13 +112,24 @@ client.on("interactionCreate", async (interaction) => {
     }
 });
 
-client.on("voiceStateUpdate", async (oldState, newState) => {
-    // get users in vc who arent bots
-    const usersInVoiceChat = newState.channel?.members.filter(m => !m.user.bot)
+// TODO: Fix this :()
+client.on('voiceStateUpdate', (oldState, newState) => {
+    // otherwise, check how many people are in the channel now
+    const newVoiceUsers = newState.channel?.members.filter(m => !m.user.bot);
 
-    if (!usersInVoiceChat) {
-        // @ts-ignore
-        if (oldState && oldState.guild) return await WaifuManager.leaveVc(newState.guild, true);
+    if (newVoiceUsers?.size == 0) {
+        const possibleConnection = getVoiceConnection(newState.guild.id);
+
+        if (possibleConnection) possibleConnection.destroy();
+    }
+
+    // otherwise, check how many people are in the channel now
+    const oldVoiceUsers = oldState.channel?.members.filter(m => !m.user.bot);
+
+    if (oldVoiceUsers?.size == 0) {
+        const possibleConnection = getVoiceConnection(oldState.guild.id);
+
+        if (possibleConnection) possibleConnection.destroy();
     }
 });
 
