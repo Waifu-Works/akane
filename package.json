@@ -5,7 +5,7 @@
     "main": "index.js",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
-        "deployCommands": "ts-node scripts\\deployCommands.ts",
+        "deployCommands": "node .\\scripts\\deployCommands.js",
         "build": "tsc",
         "start": "node ./out/index.js"
     },

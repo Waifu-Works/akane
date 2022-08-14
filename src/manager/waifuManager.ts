@@ -137,6 +137,7 @@ namespace WaifuManager {
 
         if (foundInfo) {
             foundInfo.isSpeaking = value;
+            foundInfo.lastSpoke = Date.now();
 
             // if found info
             return waifuGuilds.set(guild.id, foundInfo);
